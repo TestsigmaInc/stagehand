@@ -1,6 +1,6 @@
 {
-  "name": "@browserbasehq/stagehand",
-  "version": "2.4.1",
+  "name": "@testsigmainc/stagehand",
+  "version": "0.1.0",
   "description": "An AI web browsing framework focused on simplicity and extensibility.",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -102,6 +102,9 @@
     "doc": "docs",
     "example": "examples",
     "lib": "lib"
+  },
+  "publishConfig": {
+    "@testsigmainc:registry": "https://npm.pkg.github.com"
   },
   "repository": {
     "type": "git",

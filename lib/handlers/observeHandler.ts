@@ -216,7 +216,7 @@ export class StagehandObserveHandler {
     this.logger({
       category: "observation",
       message: "found elements",
-      level: 1,
+      level: 0,
       auxiliary: {
         elements: {
           value: JSON.stringify(elementsWithSelectors),
