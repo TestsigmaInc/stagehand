@@ -2,4 +2,4 @@
 "@browserbasehq/stagehand": patch
 ---
 
-fix: nested iframe xpath bug
+Patch GPT-5 new api format

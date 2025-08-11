@@ -386,6 +386,38 @@
     {
       "name": "nested_iframes_2",
       "categories": ["act"]
+    },
+    {
+      "name": "heal_scroll_50",
+      "categories": ["act"]
+    },
+    {
+      "name": "heal_simple_google_search",
+      "categories": ["regression", "act"]
+    },
+    {
+      "name": "heal_custom_dropdown",
+      "categories": ["act"]
+    },
+    {
+      "name": "agent/trivago",
+      "categories": ["agent"]
+    },
+    {
+      "name": "agent/google_maps",
+      "categories": ["agent"]
+    },
+    {
+      "name": "agent/google_maps_2",
+      "categories": ["agent"]
+    },
+    {
+      "name": "agent/youtube",
+      "categories": ["agent"]
+    },
+    {
+      "name": "agent/sign_in",
+      "categories": ["agent"]
     }
   ]
 }
