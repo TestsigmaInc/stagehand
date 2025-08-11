@@ -1,5 +1,11 @@
 # @browserbasehq/stagehand
 
+## 0.1.1
+
+### Patch Changes
+
+- pulled latest changes
+
 ## 2.4.2
 
 ### Patch Changes
