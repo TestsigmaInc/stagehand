@@ -44,7 +44,7 @@ import {
   InvalidAISDKModelFormatError,
   StagehandInitError,
 } from "../types/stagehandErrors";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { GotoOptions } from "@/types/playwright";
 
 dotenv.config({ path: ".env" });
@@ -614,6 +614,12 @@ export class Stagehand {
 
     if (llmClient) {
       this.llmClient = llmClient;
+      this.logger({
+        category: "init",
+        message: "Custom LLM clients are currently not supported in API mode",
+        level: 1,
+      });
+      this.usingAPI = false;
     } else {
       try {
         // try to set a default LLM client
@@ -931,6 +937,7 @@ export class Stagehand {
       You are currently on the following page: ${this.stagehandPage.page.url()}.
       Do not ask follow up questions, the user will trust your judgement.`,
         agentType: options.provider,
+        experimental: this.experimental,
       },
       options.client,
     );

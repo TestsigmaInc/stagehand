@@ -50,12 +50,16 @@
       {
         "group": "Integrations",
         "pages": [
+          {
+            "group": "MCP Server",
+            "pages": [
+              "integrations/mcp/introduction",
+              "integrations/mcp/setup",
+              "integrations/mcp/tools",
+              "integrations/mcp/configuration"
+            ]
+          },
           "integrations/langchain",
-          "integrations/windsurf",
-          "integrations/mcp-server",
-          "integrations/cursor",
-          "integrations/cline",
-          "integrations/claude-code",
           "integrations/crew-ai"
         ]
       }
@@ -97,8 +101,9 @@
     }
   },
   "integrations": {
-    "koala": {
-      "publicApiKey": "pk_6e508a479e95d94298f034e98ec54590ccf4"
+    "posthog": {
+      "apiKey": "phc_hmwkFrlc9UVrdE1jyG8AEKoCQCSr8dScjsRpKoLBEiV",
+      "apiHost": "https://us.i.posthog.com"
     }
   }
 }

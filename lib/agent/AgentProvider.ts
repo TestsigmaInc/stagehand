@@ -38,6 +38,7 @@ export class AgentProvider {
     clientOptions?: Record<string, unknown>,
     userProvidedInstructions?: string,
     client?: OpenAI | Anthropic,
+    experimental?: boolean,
   ): AgentClient {
     const type = AgentProvider.getAgentProvider(modelName);
     this.logger({
@@ -62,6 +63,7 @@ export class AgentProvider {
             modelName,
             userProvidedInstructions,
             clientOptions,
+            experimental,
           );
         default:
           throw new UnsupportedModelProviderError(

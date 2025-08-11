@@ -45,6 +45,7 @@ export class StagehandAgentHandler {
       options.clientOptions || {},
       options.userProvidedInstructions,
       client,
+      options.experimental,
     );
 
     // Store the client
