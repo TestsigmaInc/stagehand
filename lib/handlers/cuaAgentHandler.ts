@@ -43,7 +43,7 @@ export class CuaAgentHandler {
     this.provider = new AgentProvider(logger);
 
     // Create client first
-    const client = this.provider.getClient(
+    const agentClient = this.provider.getClient(
       options.modelName,
       options.clientOptions || {},
       options.userProvidedInstructions,
@@ -51,13 +51,13 @@ export class CuaAgentHandler {
     );
 
     // Store the client
-    this.agentClient = client;
+    this.agentClient = agentClient;
 
     // Set up common functionality for any client type
     this.setupAgentClient();
 
     // Create agent with the client
-    this.agent = new StagehandAgent(client, logger);
+    this.agent = new StagehandAgent(agentClient, logger);
   }
 
   private setupAgentClient(): void {

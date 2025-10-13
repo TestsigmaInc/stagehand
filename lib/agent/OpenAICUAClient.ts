@@ -54,11 +54,13 @@ export class OpenAICUAClient extends AgentClient {
       typeof clientOptions.environment === "string"
     ) {
       this.environment = clientOptions.environment;
+      delete clientOptions.environment;
     }
 
     // Store client options for reference
     this.clientOptions = {
       apiKey: this.apiKey,
+      ...clientOptions,
     };
 
     if (this.baseURL) {
