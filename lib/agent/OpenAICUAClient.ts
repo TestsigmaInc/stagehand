@@ -12,7 +12,7 @@ import {
 } from "@/types/agent";
 import { AgentClient } from "./AgentClient";
 import { AgentScreenshotProviderError } from "@/types/stagehandErrors";
-import Anthropic from "@anthropic-ai/sdk";
+import { ToolSet } from "ai/dist";
 
 /**
  * Client for OpenAI's Computer Use Assistant API
@@ -30,19 +30,21 @@ export class OpenAICUAClient extends AgentClient {
   private actionHandler?: (action: AgentAction) => Promise<void>;
   private reasoningItems: Map<string, ResponseItem> = new Map();
   private environment: string = "browser"; // "browser", "mac", "windows", or "ubuntu"
+  private tools?: ToolSet;
 
   constructor(
     type: AgentType,
     modelName: string,
     userProvidedInstructions?: string,
     clientOptions?: Record<string, unknown>,
-    client?: OpenAI | Anthropic,
+    tools?: ToolSet,
   ) {
     super(type, modelName, userProvidedInstructions);
 
     // Process client options
     this.apiKey =
       (clientOptions?.apiKey as string) || process.env.OPENAI_API_KEY || "";
+    this.baseURL = (clientOptions?.baseURL as string) || undefined;
     this.organization =
       (clientOptions?.organization as string) || process.env.OPENAI_ORG;
 
@@ -61,8 +63,14 @@ export class OpenAICUAClient extends AgentClient {
       ...clientOptions,
     };
 
+    if (this.baseURL) {
+      this.clientOptions.baseURL = this.baseURL;
+    }
+
     // Initialize the OpenAI client
-    this.client = (client as OpenAI) || new OpenAI(this.clientOptions);
+    this.client = new OpenAI(this.clientOptions);
+
+    this.tools = tools;
   }
 
   setViewport(width: number, height: number): void {
@@ -340,6 +348,24 @@ export class OpenAICUAClient extends AgentClient {
         truncation: "auto",
       };
 
+      // Add custom tools if available
+      if (this.tools && Object.keys(this.tools).length > 0) {
+        const customTools = Object.entries(this.tools).map(([name, tool]) => ({
+          type: "function" as const,
+          name,
+          function: {
+            name,
+            description: tool.description,
+            parameters: tool.parameters,
+          },
+        }));
+
+        requestParams.tools = [
+          ...(requestParams.tools as Record<string, unknown>[]),
+          ...customTools,
+        ];
+      }
+
       // Add previous_response_id if available
       if (previousResponseId) {
         requestParams.previous_response_id = previousResponseId;
@@ -380,10 +406,10 @@ export class OpenAICUAClient extends AgentClient {
   ): Promise<ResponseInputItem[]> {
     const nextInputItems: ResponseInputItem[] = [];
 
-    // Add any computer calls to process
+    // Process each output item
     for (const item of output) {
       if (item.type === "computer_call" && this.isComputerCallItem(item)) {
-        // Execute the action
+        // Handle computer calls
         try {
           const action = this.convertComputerCallToAction(item);
 
@@ -532,7 +558,7 @@ export class OpenAICUAClient extends AgentClient {
         item.type === "function_call" &&
         this.isFunctionCallItem(item)
       ) {
-        // Execute the function
+        // Handle function calls (tool calls)
         try {
           const action = this.convertFunctionCallToAction(item);
 
@@ -540,12 +566,53 @@ export class OpenAICUAClient extends AgentClient {
             await this.actionHandler(action);
           }
 
-          // Add the result
-          nextInputItems.push({
+          // Execute the tool if available
+          let toolResult = "Tool executed successfully";
+          if (this.tools && item.name in this.tools) {
+            try {
+              const tool = this.tools[item.name];
+              const args = JSON.parse(item.arguments);
+
+              logger({
+                category: "agent",
+                message: `Executing tool call: ${item.name} with args: ${item.arguments}`,
+                level: 1,
+              });
+
+              const result = await tool.execute(args, {
+                toolCallId: item.call_id,
+                messages: [],
+              });
+              toolResult = JSON.stringify(result);
+
+              logger({
+                category: "agent",
+                message: `Tool ${item.name} completed successfully. Result: ${toolResult}`,
+                level: 1,
+              });
+            } catch (toolError) {
+              const errorMessage =
+                toolError instanceof Error
+                  ? toolError.message
+                  : String(toolError);
+              toolResult = `Error executing tool: ${errorMessage}`;
+
+              logger({
+                category: "agent",
+                message: `Error executing tool ${item.name}: ${errorMessage}`,
+                level: 0,
+              });
+            }
+          }
+
+          // Create a function_call_output for the next request
+          const outputItem: ResponseInputItem = {
             type: "function_call_output",
             call_id: item.call_id,
-            output: "success",
-          });
+            output: toolResult,
+          };
+
+          nextInputItems.push(outputItem);
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : String(error);
@@ -556,11 +623,14 @@ export class OpenAICUAClient extends AgentClient {
             level: 0,
           });
 
-          nextInputItems.push({
+          // Send error result back
+          const errorOutputItem: ResponseInputItem = {
             type: "function_call_output",
             call_id: item.call_id,
             output: `Error: ${errorMessage}`,
-          });
+          };
+
+          nextInputItems.push(errorOutputItem);
         }
       }
     }

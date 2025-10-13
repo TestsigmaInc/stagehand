@@ -1,14 +1,13 @@
-import { LogLine } from "@/types/log";
-import { AgentClient } from "./AgentClient";
 import { AgentType } from "@/types/agent";
-import { OpenAICUAClient } from "./OpenAICUAClient";
-import { AnthropicCUAClient } from "./AnthropicCUAClient";
+import { LogLine } from "@/types/log";
 import {
   UnsupportedModelError,
   UnsupportedModelProviderError,
 } from "@/types/stagehandErrors";
-import { OpenAI } from "openai";
-import Anthropic from "@anthropic-ai/sdk";
+import { ToolSet } from "ai/dist";
+import { AgentClient } from "./AgentClient";
+import { AnthropicCUAClient } from "./AnthropicCUAClient";
+import { OpenAICUAClient } from "./OpenAICUAClient";
 
 // Map model names to their provider types
 const modelToAgentProviderMap: Record<string, AgentType> = {
@@ -37,8 +36,7 @@ export class AgentProvider {
     modelName: string,
     clientOptions?: Record<string, unknown>,
     userProvidedInstructions?: string,
-    client?: OpenAI | Anthropic,
-    experimental?: boolean,
+    tools?: ToolSet,
   ): AgentClient {
     const type = AgentProvider.getAgentProvider(modelName);
     this.logger({
@@ -55,7 +53,7 @@ export class AgentProvider {
             modelName,
             userProvidedInstructions,
             clientOptions,
-            client,
+            tools,
           );
         case "anthropic":
           return new AnthropicCUAClient(
@@ -63,7 +61,7 @@ export class AgentProvider {
             modelName,
             userProvidedInstructions,
             clientOptions,
-            experimental,
+            tools,
           );
         default:
           throw new UnsupportedModelProviderError(
