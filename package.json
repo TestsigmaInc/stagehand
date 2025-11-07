@@ -78,7 +78,7 @@
     "@browserbasehq/sdk": "^2.4.0",
     "@google/genai": "^1.22.0",
     "@modelcontextprotocol/sdk": "^1.17.2",
-    "ai": "^4.3.9",
+    "ai": "^5.0.52",
     "devtools-protocol": "^0.0.1464554",
     "fetch-cookie": "^3.1.0",
     "openai": "^4.87.1",
